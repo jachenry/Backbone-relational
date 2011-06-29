@@ -609,6 +609,7 @@
 				this.related = attr;
 				this.related.bind( 'add', this.handleAddition ).bind( 'remove', this.handleRemoval );
 			} else if( this.related instanceof Backbone.Collection ) {
+				this.related.reset( );
 				this.setRelated( this.related );
 				this.findRelated();
 			} else {
@@ -883,7 +884,8 @@
 		},
 		
 		destroy: function( options ) {
-			Backbone.Relational.store.unregister( this );
+			this.urlRoot = this.collection.url(); //added to avoid losing the url in unregister
+			Backbone.Relational.store.unregister( this ); //Why is this needed?  Should be listening to event on collection.
 			return Backbone.Model.prototype.destroy.call( this, options );
 		},
 		
@@ -903,7 +905,7 @@
 					
 					if ( rel.options.includeInJSON && value && _.isFunction( value.toJSON ) ) {
 						this.acquire();
-						json[ rel.key ] = value.toJSON();
+						json[ rel.key ] = value.toJSON( true );
 						this.release();
 					} else {
 						if ( value instanceof Backbone.Model ){
